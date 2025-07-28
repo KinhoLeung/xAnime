@@ -72,7 +72,7 @@ typedef struct {
   char* opacity;
   // 旋转角度 (0-360)
   char* rotate;
-  // 缩放 (百分比)
+  // 缩放
   char* scale;
   // 持续时间 (ms)
   char* dur;
