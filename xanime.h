@@ -86,6 +86,8 @@ typedef struct {
   char* pivot_y;
   // 自动播放
   bool auto_play;
+  // 从设定值反向执行动画
+  bool is_from;
   // 缓动函数
   xanime_easing_t easing;
   // 动画完成回调
@@ -123,7 +125,7 @@ void xanime_delete(xanime_t* anime);
 
 void anime_param_handle(lv_anim_t* anim, xanime_t* anime, lv_obj_t* obj);
 
-void add_anim_property(lv_anim_t* anim, lv_anim_exec_xcb_t exec_cb,
+void add_anim_property(xanime_t* anime, lv_anim_t* anim, lv_anim_exec_xcb_t exec_cb,
                        int32_t start, const char* end);
 
 

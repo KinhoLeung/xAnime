@@ -85,6 +85,7 @@ void xanime_create(xanime_obj_t obj, xanime_param_t params) {
   anime.params.pivot_y = params.pivot_y;
   anime.params.complete_cb = params.complete_cb;
   anime.params.user_data = params.user_data;
+  anime.params.is_from = params.is_from;
 
   // 初始化状态
   anime.is_playing = false;
@@ -140,6 +141,7 @@ xanime_t* xanime_create_rt(xanime_obj_t obj, xanime_param_t params) {
   anime->params.loop = params.loop;
   anime->params.complete_cb = params.complete_cb;
   anime->params.user_data = params.user_data;
+  anime->params.is_from = params.is_from;
 
   // 初始化状态
   anime->is_playing = false;
@@ -166,6 +168,8 @@ xanime_t* xanime_start(xanime_t* anime) {
   // 循环创建动画
   for (uint16_t i = 0; i < anime->obj.obj_num; i++) {
     lv_obj_t* cur_obj = anime->obj.obj_arr[i];
+    // 更新最新布局
+    lv_obj_update_layout(cur_obj);
     // 初始化动画
     lv_anim_t a;
     lv_anim_init(&a);
@@ -257,9 +261,9 @@ void anime_param_handle(lv_anim_t* anim, xanime_t* anime, lv_obj_t* obj) {
       // 移除字符串中的%
       remove_percent_chars(x_str);
       int32_to_str(get_x_percent(obj, x_str), x_str, 12);
-      add_anim_property(anim, (lv_anim_exec_xcb_t)lv_obj_set_x, start, x_str);
+      add_anim_property(anime, anim, (lv_anim_exec_xcb_t)lv_obj_set_x, start, x_str);
     } else {
-      add_anim_property(anim, (lv_anim_exec_xcb_t)lv_obj_set_x, start,
+      add_anim_property(anime, anim, (lv_anim_exec_xcb_t)lv_obj_set_x, start,
                         anime->params.x);
     }
   }
@@ -273,9 +277,9 @@ void anime_param_handle(lv_anim_t* anim, xanime_t* anime, lv_obj_t* obj) {
       // 移除字符串中的%
       remove_percent_chars(y_str);
       int32_to_str(get_y_percent(obj, y_str), y_str, 12);
-      add_anim_property(anim, (lv_anim_exec_xcb_t)lv_obj_set_y, start, y_str);
+      add_anim_property(anime, anim, (lv_anim_exec_xcb_t)lv_obj_set_y, start, y_str);
     } else {
-      add_anim_property(anim, (lv_anim_exec_xcb_t)lv_obj_set_y, start,
+      add_anim_property(anime, anim, (lv_anim_exec_xcb_t)lv_obj_set_y, start,
                         anime->params.y);
     }
   }
@@ -290,10 +294,10 @@ void anime_param_handle(lv_anim_t* anim, xanime_t* anime, lv_obj_t* obj) {
       // 移除字符串中的%
       remove_percent_chars(width_str);
       int32_to_str(get_width_percent(obj, width_str), width_str, 12);
-      add_anim_property(anim, (lv_anim_exec_xcb_t)lv_obj_set_width, start,
+      add_anim_property(anime, anim, (lv_anim_exec_xcb_t)lv_obj_set_width, start,
                         width_str);
     } else {
-      add_anim_property(anim, (lv_anim_exec_xcb_t)lv_obj_set_width, start,
+      add_anim_property(anime, anim, (lv_anim_exec_xcb_t)lv_obj_set_width, start,
                         anime->params.width);
     }
   }
@@ -307,22 +311,22 @@ void anime_param_handle(lv_anim_t* anim, xanime_t* anime, lv_obj_t* obj) {
       // 移除字符串中的%
       remove_percent_chars(height_str);
       int32_to_str(get_height_percent(obj, height_str), height_str, 12);
-      add_anim_property(anim, (lv_anim_exec_xcb_t)lv_obj_set_height, start,
+      add_anim_property(anime, anim, (lv_anim_exec_xcb_t)lv_obj_set_height, start,
                         height_str);
     } else {
-      add_anim_property(anim, (lv_anim_exec_xcb_t)lv_obj_set_height, start,
+      add_anim_property(anime, anim, (lv_anim_exec_xcb_t)lv_obj_set_height, start,
                         anime->params.height);
     }
   }
   // opacity
   if (check_param(anime->params.opacity)) {
     int32_t start = lv_obj_get_style_opa(obj, 0);
-    add_anim_property(anim, opa_exec_cb, start, anime->params.opacity);
+    add_anim_property(anime, anim, opa_exec_cb, start, anime->params.opacity);
   }
   // rotate
   if (check_param(anime->params.rotate)) {
     int32_t start = lv_obj_get_style_transform_angle(obj, 0);
-    add_anim_property(anim, rotate_exec_cb, start, anime->params.rotate);
+    add_anim_property(anime, anim, rotate_exec_cb, start, anime->params.rotate);
   }
   // pivot_x
   if (check_param(anime->params.pivot_x)) {
@@ -380,7 +384,7 @@ void anime_param_handle(lv_anim_t* anim, xanime_t* anime, lv_obj_t* obj) {
   // scale
   if (check_param(anime->params.scale)) {
     int32_t start = lv_obj_get_style_transform_zoom(obj, 0);
-    add_anim_property(anim, zoom_exec_cb, start, anime->params.scale);
+    add_anim_property(anime, anim, zoom_exec_cb, start, anime->params.scale);
   }
 }
 
@@ -392,7 +396,7 @@ void anime_param_handle(lv_anim_t* anim, xanime_t* anime, lv_obj_t* obj) {
  * @param {char*} end
  * @return {*}
  ********************************************************************************/
-void add_anim_property(lv_anim_t* anim, lv_anim_exec_xcb_t exec_cb,
+void add_anim_property(xanime_t* anime, lv_anim_t* anim, lv_anim_exec_xcb_t exec_cb,
                        int32_t start, const char* end) {
   bool success = false;
   int32_t end_int = str_to_int32(end, &success);
@@ -401,7 +405,11 @@ void add_anim_property(lv_anim_t* anim, lv_anim_exec_xcb_t exec_cb,
     return;
   }
   lv_anim_set_exec_cb(anim, exec_cb);
-  lv_anim_set_values(anim, start, end_int);
+  if (anime->params.is_from) {
+    lv_anim_set_values(anim, end_int, start);
+  } else {
+    lv_anim_set_values(anim, start, end_int);
+  }
   lv_anim_start(anim);
 }
 
