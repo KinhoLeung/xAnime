@@ -326,24 +326,55 @@ void anime_param_handle(lv_anim_t* anim, xanime_t* anime, lv_obj_t* obj) {
   }
   // pivot_x
   if (check_param(anime->params.pivot_x)) {
+    char pivot_str[12];
+    int32_t pivot_x = 0;
+    if (has_percent(anime->params.pivot_x)) {
+      // 复制字符串
+      strcpy(pivot_str, anime->params.pivot_x);
+      // 移除字符串中的%
+      remove_percent_chars(pivot_str);
+      // 处理百分比
+      lv_coord_t percent_x = str_to_int32(pivot_str, NULL);
+      // 更新布局以获取图片宽高
+      lv_obj_update_layout(obj);
+      pivot_x = lv_obj_get_width(obj) * percent_x / 100;
+    } else {
+      pivot_x = str_to_int32(anime->params.pivot_x, NULL);
+    }
+
     if (is_image_object(obj)) {
       lv_point_t pivot;
       lv_img_get_pivot(obj, &pivot);
-      lv_img_set_pivot(obj, str_to_int32(anime->params.pivot_x, NULL), pivot.y);
+      printf("pivot_x: %d, pivot_y: %d\n", pivot_x, pivot.y);
+      lv_img_set_pivot(obj, pivot_x, pivot.y);
     } else {
-      lv_obj_set_style_transform_pivot_x(
-          obj, str_to_int32(anime->params.pivot_x, NULL), LV_PART_MAIN);
+      lv_obj_set_style_transform_pivot_x(obj, pivot_x, LV_PART_MAIN);
     }
   }
   // pivot_y
   if (check_param(anime->params.pivot_y)) {
+    char pivot_str[12];
+    int32_t pivot_y = 0;
+    if (has_percent(anime->params.pivot_y)) {
+      // 复制字符串
+      strcpy(pivot_str, anime->params.pivot_y);
+      // 移除字符串中的%
+      remove_percent_chars(pivot_str);
+      // 处理百分比
+      lv_coord_t percent_y = str_to_int32(pivot_str, NULL);
+      // 更新布局以获取图片宽高
+      lv_obj_update_layout(obj);
+      pivot_y = lv_obj_get_height(obj) * percent_y / 100;
+    } else {
+      pivot_y = str_to_int32(anime->params.pivot_y, NULL);
+    }
+
     if (is_image_object(obj)) {
       lv_point_t pivot;
       lv_img_get_pivot(obj, &pivot);
-      lv_img_set_pivot(obj, pivot.x, str_to_int32(anime->params.pivot_y, NULL));
+      lv_img_set_pivot(obj, pivot.x, pivot_y);
     } else {
-      lv_obj_set_style_transform_pivot_y(
-          obj, str_to_int32(anime->params.pivot_y, NULL), LV_PART_MAIN);
+      lv_obj_set_style_transform_pivot_y(obj, pivot_y, LV_PART_MAIN);
     }
   }
   // scale
